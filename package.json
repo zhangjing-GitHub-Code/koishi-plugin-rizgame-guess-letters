@@ -8,14 +8,16 @@
     "lib",
     "dist"
   ],
-  "license": "MIT",
+  "license": "AGPL 3.0",
   "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "rythm",
+    "game"
   ],
   "peerDependencies": {
-    "koishi": "4.14.1"
+    "koishi": "^4.14.1"
   }
 }
