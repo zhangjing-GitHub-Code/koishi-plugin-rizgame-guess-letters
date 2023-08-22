@@ -1,14 +1,17 @@
 {
   "name": "koishi-plugin-rizgame-guess-letters",
-  "description": "音 游 开 字 母",
-  "version": "0.0.1",
+  "description": "音 游 开 字 母 For Koishi",
+  "version": "0.0.3",
+  "contributors": [
+    "jing_2hang1105 <zhangjing20091105@126.com>"
+  ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib",
     "dist"
   ],
-  "license": "AGPL 3.0",
+  "license": "AGPL-3.0",
   "scripts": {},
   "keywords": [
     "chatbot",
@@ -17,7 +20,24 @@
     "rythm",
     "game"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhangjing-GitHub-Code/koishi-plugin-rizgame-guess-letters.git"
+  },
   "peerDependencies": {
     "koishi": "^4.14.1"
+  },
+  "koishi": {
+    "description": {
+      "zh": "音游开字母 For Koishi~"
+    },
+    "service": {
+      "required": [
+        "database"
+      ]
+    },
+    "locales": [
+      "zh"
+    ]
   }
 }
