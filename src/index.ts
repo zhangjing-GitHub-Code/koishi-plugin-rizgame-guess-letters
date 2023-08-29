@@ -9,29 +9,7 @@ export interface Config {
   value?: number
 }
 
-export const Config: Schema<Config> = //Schema.object({});
-/* Schema.intersect([
-  Schema.object({
-    test: Schema.number(),
-    randSongMode: Schema.union(['range','fullrandom','fixed']).required(), //.description('随机曲目个数设置')
-  }).description('配置'),
-  Schema.union([
-    Schema.object({
-      randSongMode: Schema.const('range').required(),
-      startValue: Schema.number(),
-      endValue: Schema.number()
-    }).description('范围随机'),
-    Schema.object({
-      randSongMode: Schema.const('fullrandom').required(),
-    }).description('完全随机'),
-    Schema.object({
-      randSongMode: Schema.const('fixed').required(),
-      value: Schema.number()
-    }).description('指定个数'),
-  ]),
-]);*/
-
-/*export default */Schema.intersect([
+export const Config: Schema<Config> = Schema.intersect([
   Schema.object({
     test: Schema.number(),
     randSongMode: Schema.union(['range','fullrandom','fixed']).required().description('随机曲目个数设置'),
@@ -63,7 +41,6 @@ declare module 'koishi' {
           guessedLetters?: string[], 
           songs: string[], 
           guessedSids?: number[]
-          //currAns:""
         } 
       }
     }
@@ -92,12 +69,9 @@ export async function outputGuessStatus(sess: Session,stat){
   stat["songs"].forEach((songN:String) => {
     cid++;
     let tmpsong=cid+". ";
-    //console.log(songN);
-    //songN.array.forEach(ch => {
     let allGuess=true;
     let alguess=false;
     if(stat["guessedSids"].indexOf(cid)!=-1)alguess=true;
-    //let cmpSN=songN.toLowerCase();
     for(let i=0;i<songN.length;++i){
       let ch=songN[i];
       if(ch==" "){
@@ -107,7 +81,7 @@ export async function outputGuessStatus(sess: Session,stat){
         allGuess=false;
       }else tmpsong+=ch;
     }
-    if(allGuess==true&&/*stat["guessedSids"].indexOf(cid)==-1*/!alguess){ // all guess out, but not typed out
+    if(allGuess==true&&!alguess){ // all guess out, but not typed out
       stat["guessedSids"].push(cid);
       misGuess.push(cid);
     }
@@ -126,16 +100,12 @@ export async function apply(ctx: Context,cfg: Config) {
   var logr=new Logger("rizgame-guess-letters");
   // extend channel game status
   ctx.model.extend('channel', {
-    // 向用户表中注入字符串字段 foo
-    //letterGameStatus : 'string'
-	  //     // 你还可以配置默认值为 'bar'
     letterGameStatus : { type: 'json', initial: { 
       isInGame: false, 
       gameStatus: { 
         guessedLetters:[], 
         songs:[], 
         guessedSids:[]
-        //currAns:""
       } 
     }}
   });
@@ -153,10 +123,7 @@ export async function apply(ctx: Context,cfg: Config) {
   ctx.command("rgl.guess <letter:string>").action(async (_,letter)=>{
     if(_.session.isDirect)return "请在群聊里进行游戏！";
     let stat_a=await ctx.database.get('channel', {id:[_.session.channelId]},['letterGameStatus']);
-    let stat=stat_a[0]["letterGameStatus"];//["letterGameStatus"];
-    //console.log(stat);
-    //_.session.sendQueued(stat);
-    //console.log(stat.isInGame,typeof(stat.isInGame))
+    let stat=stat_a[0]["letterGameStatus"];
     if(stat["isInGame"]!=true)return "该群聊未开始游戏，请";
     if(letter.length>1)return "您猜的不止一个字母嗷";
     //IIRFilterNode
@@ -166,20 +133,16 @@ export async function apply(ctx: Context,cfg: Config) {
       return "当前字母'"+letter[0]+"'已开过，请换一个！";
     }
     stat["gameStatus"]["guessedLetters"].push(letter[0]);
-    //console.log(stat_a);
     // Post outputs
     await ctx.database.setChannel(_.session.platform,_.session.channelId,stat_a[0]);
     outputGuessStatus(_.session as Session,stat["gameStatus"]);
-  }).shortcut("开");
+  }).alias("开");
   // type to <<decrypt>> the song name
   ctx.command("rgl.song <sid:number> <sn:text>").action(
   async (_,sid:number,sn:string)=>{
     if(_.session.isDirect)return "请在群聊里进行游戏！";
     let stat_a=await ctx.database.get('channel', {id:[_.session.channelId]},['letterGameStatus']);
-    let stat=stat_a[0]["letterGameStatus"];//["letterGameStatus"];
-    //console.log(stat);
-    //_.session.sendQueued(stat);
-    //console.log(stat.isInGame,typeof(stat.isInGame))
+    let stat=stat_a[0]["letterGameStatus"];
     if(stat["isInGame"]!=true)return "该群聊未开始游戏，请";
     if(sn.length>100)return "您猜的太长了，不像一个歌名";
     //IIRFilterNode
@@ -193,7 +156,6 @@ export async function apply(ctx: Context,cfg: Config) {
       console.log(_.name,_.session.author,await _.session.getUser(),_.session.userId);
     let guecomp=sn.toLowerCase();
     let rcomp=stat["gameStatus"]["songs"][sid-1].toLowerCase();
-      //if(rcomp==guecomp)findG=true;
     if(rcomp==guecomp){
       stat["gameStatus"]["guessedSids"].push(sid);
       _.session.sendQueued("恭喜猜出歌曲 "+sn+" ！");
@@ -204,7 +166,6 @@ export async function apply(ctx: Context,cfg: Config) {
         stat["gameStatus"]["guessedSids"]=[];
         stat["gameStatus"]["songs"]=[];
         await ctx.database.setChannel(_.session.platform,_.session.channelId,stat_a[0]);
-        //let endmsg="恭喜猜出全部歌曲！最后一个人是 <at id='"+_.session.platform+":"+_.session.userId+"' />";
         let endmsg="恭喜猜出全部歌曲！最后一个人是 "+h('at',{ id: _.session.userId });
         _.session.sendQueued("恭喜猜出全部歌曲！最后一个人是 "+h('at',{ id: _.session.userId }));
         console.log(endmsg);
@@ -215,16 +176,13 @@ export async function apply(ctx: Context,cfg: Config) {
     }else{
       _.session.sendQueued("抱歉，您没猜出曲名！");
     }
-    //console.log(stat_a);
     // Post outputs
     outputGuessStatus(_.session as Session,stat["gameStatus"]);
-  }).shortcut("曲");
+  }).alias("曲");
   // Add songs
   ctx.command("rgl.addsong <sn:string> [hardness:number]").action(async (_,sn,hd)=>{
     if(!_.session.isDirect)return;
     if(sn==undefined)return "缺失曲名，无法添加";
-    //console.log(sn);
-    //console.log(hd);
     if(hd==undefined||hd==0){
       hd=1;
       if(sn.length>18)hd++; // long names
@@ -242,42 +200,37 @@ export async function apply(ctx: Context,cfg: Config) {
     let stat_a=await ctx.database.get('songlist', {name:[sn]},['id']);
     //console.log(stat_a);
     if(stat_a.length>0)return "歌曲已添加过，id: "+stat_a[0]["id"];
-	try{
-	await ctx.database.create('songlist',{ hardness:hd, name:sn});
-	}catch(e:any){
-		logr.error("Database song add fail: "+e);
-		return "添加失败！请查看日志";
-	}
-    //let stat=stat_a[0]["letterGameStatus"];//["letterGameStatus"];
-  }).shortcut("添加歌曲");
+    try{
+      await ctx.database.create('songlist',{ hardness:hd, name:sn});
+    }catch(e:any){
+      logr.error("Database song add fail: "+e);
+      return "添加失败！请查看日志";
+    }
+  }).alias("添加歌曲");
   // List songs
   ctx.command("rgl.listsong").action(async (_)=>{
     if(!_.session.isDirect)return;
     let stat_a=await ctx.database.get('songlist', { id : { $gte: 0 }},['name']);
-    //console.log(stat_a);
-    //let songs=[];
     let retans="数据库内歌曲："
     stat_a.forEach((kv)=>{
       retans+="\n"+kv["name"];
     });
-	_.session.sendQueued(retans);
-    //let stat=stat_a[0]["letterGameStatus"];//["letterGameStatus"];
-  }).shortcut("查看歌曲").shortcut("列出歌曲");
+    _.session.sendQueued(retans);
+  }).alias("查看歌曲").alias("列出歌曲");
   ctx.command("rgl.start [channelId:string]").action(async (_,gid)=>{
     if(_.session.isDirect&&gid==undefined)return "请在群聊调用或指定 channelId!";
     if(gid==undefined||gid.length<2)gid=_.session.channelId;
-	let ginfo=await ctx.database.get('channel', {id:[gid]},['letterGameStatus']);
+    let ginfo=await ctx.database.get('channel', {id:[gid]},['letterGameStatus']);
     //console.log(ginfo);
-  let stat=ginfo[0]["letterGameStatus"];
+    let stat=ginfo[0]["letterGameStatus"];
     // DEBUG PURPOSE
     if(stat["isInGame"])return "该群组已开始进行游戏！";
     stat["isInGame"]=true;
     let stat_a=await ctx.database.get('songlist',{id:{ $gte:0 }},['name']);
-	let songs=[];
-	stat_a.forEach((kv)=>{
-		songs.push(kv["name"]);
-	});
-    //let finSongs=[]
+    let songs=[];
+    stat_a.forEach((kv)=>{
+      songs.push(kv["name"]);
+    });
     let finalSC=0;
     if(cfg.randSongMode=='range'){
       finalSC=Random.int(cfg.startValue,Math.min(cfg.endValue,songs.length));
@@ -288,30 +241,25 @@ export async function apply(ctx: Context,cfg: Config) {
     }
     let finSongs=Random.pick(songs,finalSC);
     stat["gameStatus"]["songs"]=finSongs;
-    //console.log(ginfo);
     _.session.bot.sendMessage(gid,"已随机"+finalSC+"个曲子");
     // Post output
     await ctx.database.setChannel(_.session.platform,gid,ginfo[0]);
     outputGuessStatus(_.session as Session,stat["gameStatus"]);
-	//let stat=stat_a[0]["letterGameStatus"];//["letterGameStatus"];
-  }).shortcut("开始开字母");
+  }).alias("开始开字母");
   ctx.command("rgl.stop [channelId:string]").action(async (_,gid)=>{
     if(_.session.isDirect&&gid==undefined)return "请在群聊调用或指定 channelId!";
     if(gid==undefined||gid.length<2)gid=_.session.channelId;
-	let ginfo=await ctx.database.get('channel', {id:[gid]},['letterGameStatus']);
-    //console.log(ginfo);
-  let stat=ginfo[0]["letterGameStatus"];
+    let ginfo=await ctx.database.get('channel', {id:[gid]},['letterGameStatus']);
+    let stat=ginfo[0]["letterGameStatus"];
     // DEBUG PURPOSE
     if(!stat["isInGame"])return "该群组并未进行游戏！";
     stat["isInGame"]=false;
     stat["gameStatus"]["songs"]=[];
     stat["gameStatus"].guessedLetters=[];
     stat.gameStatus.guessedSids=[];
-    //console.log(ginfo);
     _.session.bot.sendMessage(gid,"已结束游戏！");
     // Post output
     await ctx.database.setChannel(_.session.platform,gid,ginfo[0]);
-	//let stat=stat_a[0]["letterGameStatus"];//["letterGameStatus"];
-  }).shortcut("停止开字母");
+  }).alias("停止开字母");
   logr.info("plugin register finish.");
 }

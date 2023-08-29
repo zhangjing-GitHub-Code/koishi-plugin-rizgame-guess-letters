@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-rizgame-guess-letters",
   "description": "音 游 开 字 母 For Koishi",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "contributors": [
     "jing_2hang1105 <zhangjing20091105@126.com>"
   ],
