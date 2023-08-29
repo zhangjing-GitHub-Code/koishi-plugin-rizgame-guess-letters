@@ -187,15 +187,14 @@ export async function apply(ctx: Context,cfg: Config) {
     if(stat["gameStatus"]["guessedSids"].indexOf(sid)!=-1){
       return "当前歌曲id "+sid+" 已猜出，请换一个！";
     }
+    if(sid<1||sid>stat["gameStatus"]["songs"].length){
+      return "编号错误！";
+    }
       console.log(_.name,_.session.author,await _.session.getUser(),_.session.userId);
     let guecomp=sn.toLowerCase();
-    let findG=false;
-    stat["gameStatus"]["songs"].forEach(nsn => {
-      let comp=nsn as string;
-      let rcomp=comp.toLowerCase();
-      if(rcomp==guecomp)findG=true;
-    });
-    if(findG){
+    let rcomp=stat["gameStatus"]["songs"][sid-1].toLowerCase();
+      //if(rcomp==guecomp)findG=true;
+    if(rcomp==guecomp){
       stat["gameStatus"]["guessedSids"].push(sid);
       _.session.sendQueued("恭喜猜出歌曲 "+sn+" ！");
       if(stat["gameStatus"]["guessedSids"].length==stat["gameStatus"]["songs"].length){
@@ -206,8 +205,8 @@ export async function apply(ctx: Context,cfg: Config) {
         stat["gameStatus"]["songs"]=[];
         await ctx.database.setChannel(_.session.platform,_.session.channelId,stat_a[0]);
         //let endmsg="恭喜猜出全部歌曲！最后一个人是 <at id='"+_.session.platform+":"+_.session.userId+"' />";
-        let endmsg="恭喜猜出全部歌曲！最后一个人是 "+h('a',{ id: _.session.userId });
-        _.session.sendQueued("恭喜猜出全部歌曲！最后一个人是 "+h('a',{ id: _.session.userId }));
+        let endmsg="恭喜猜出全部歌曲！最后一个人是 "+h('at',{ id: _.session.userId });
+        _.session.sendQueued("恭喜猜出全部歌曲！最后一个人是 "+h('at',{ id: _.session.userId }));
         console.log(endmsg);
         return;
       }
@@ -216,7 +215,7 @@ export async function apply(ctx: Context,cfg: Config) {
     }else{
       _.session.sendQueued("抱歉，您没猜出曲名！");
     }
-    console.log(stat_a);
+    //console.log(stat_a);
     // Post outputs
     outputGuessStatus(_.session as Session,stat["gameStatus"]);
   }).shortcut("曲");
@@ -224,8 +223,8 @@ export async function apply(ctx: Context,cfg: Config) {
   ctx.command("rgl.addsong <sn:string> [hardness:number]").action(async (_,sn,hd)=>{
     if(!_.session.isDirect)return;
     if(sn==undefined)return "缺失曲名，无法添加";
-    console.log(sn);
-    console.log(hd);
+    //console.log(sn);
+    //console.log(hd);
     if(hd==undefined||hd==0){
       hd=1;
       if(sn.length>18)hd++; // long names
@@ -289,7 +288,7 @@ export async function apply(ctx: Context,cfg: Config) {
     }
     let finSongs=Random.pick(songs,finalSC);
     stat["gameStatus"]["songs"]=finSongs;
-    console.log(ginfo);
+    //console.log(ginfo);
     _.session.bot.sendMessage(gid,"已随机"+finalSC+"个曲子");
     // Post output
     await ctx.database.setChannel(_.session.platform,gid,ginfo[0]);
@@ -308,7 +307,7 @@ export async function apply(ctx: Context,cfg: Config) {
     stat["gameStatus"]["songs"]=[];
     stat["gameStatus"].guessedLetters=[];
     stat.gameStatus.guessedSids=[];
-    console.log(ginfo);
+    //console.log(ginfo);
     _.session.bot.sendMessage(gid,"已结束游戏！");
     // Post output
     await ctx.database.setChannel(_.session.platform,gid,ginfo[0]);
