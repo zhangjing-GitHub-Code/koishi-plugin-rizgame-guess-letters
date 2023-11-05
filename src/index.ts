@@ -207,6 +207,27 @@ export async function apply(ctx: Context,cfg: Config) {
       return "添加失败！请查看日志";
     }
   }).alias("添加歌曲");
+  // Del songs
+  ctx.command("rgl.rmsong <sn:text>").action(async (_,sn)=>{
+    if(!_.session.isDirect)return;
+    if(sn==undefined)return "缺失曲名，无法删除";
+    let stat_raw=await ctx.database.get('songlist', {},['name','id']);
+    // let stat_r=stat_raw[0];
+    let stat_a:string[]=[];
+    let bRemoved:boolean=false;
+    stat_raw.forEach(async(e)=>{
+      if(e.name.toLowerCase()==sn.toLowerCase()){
+        // found song name
+        bRemoved=true;
+        await ctx.database.remove('songlist',{id:e.id});
+        _.session.sendQueued("删除歌曲 id:"+e.id+",名称:"+e.name);
+        logr.info("Deleting song id:"+e.id+",Name:"+e.name);
+      }
+    });
+    if(!bRemoved)return "不存在该歌曲！";
+    //console.log(stat_a);
+    if(stat_a.length<=0)return "歌曲不存在！";// "歌曲已添加过，id: "+stat_a[0]["id"];
+  }).alias("删除歌曲");
   // List songs
   ctx.command("rgl.listsong").action(async (_)=>{
     if(!_.session.isDirect)return;

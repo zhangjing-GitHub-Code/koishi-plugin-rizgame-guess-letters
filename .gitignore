@@ -15,5 +15,7 @@ tsconfig.tsbuildinfo
 *.ntvs*
 *.njsproj
 *.sln
+.npmrc
+.yarnrc
 
 .*.swp

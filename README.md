@@ -51,6 +51,16 @@
 
 ### 删除歌曲: 私
 
-(WIP)
+- `rgl.rmsong <曲名]` aka.删除歌曲
+删除所有与 `曲名` 全小写 匹配的歌曲
+> 举例：
+> ```
+> #  id     name
+>    1     Bonus timE
+>    2     BONus TIme
+> ```
+> \> rgl.rmsong bonUS TIME  
+> \< 删除歌曲 id:1 Name:Bonus timE  
+> \< 删除歌曲 id:2 Name:BONus TIme  
 
 权限限制WIP，如果曲库要开箱即用跟我提，欢迎PR更多功能！
